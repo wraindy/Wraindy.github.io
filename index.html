@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wraindy摄影展</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-container">
+        <!-- 头部标题区域 -->
+        <header class="header">            <div class="header-top">
+                <div class="header-left">
+                    <!-- 留空，保持布局平衡 -->
+                </div>
+                <div class="header-right">
+                    <div class="real-time-clock" id="realTimeClock">
+                        <span id="currentTime">00:00</span>
+                        <span id="currentDate">2024-01-01</span>
+                    </div>
+                    <div class="theme-controls">
+                        <button id="themeToggle" class="theme-btn" title="切换主题">
+                            <span class="theme-icon">🌙</span>
+                        </button>
+                    </div>
+                </div>
+            </div>            <h1 class="title">Wraindy摄影展</h1>
+        </header><!-- 主要展示区域 -->
+        <main class="main-content">
+            <!-- 可折叠筛选控制面板 -->
+            <div class="filter-container">
+                <div class="filter-toggle" id="filterToggle">
+                    <span class="filter-toggle-text">筛选条件</span>
+                    <span class="filter-toggle-icon">▼</span>
+                </div>
+                <div class="filter-panel" id="filterPanel">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="yearFilter">年份:</label>
+                            <select id="yearFilter">
+                                <option value="">所有年份</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="monthFilter">月份:</label>
+                            <select id="monthFilter">
+                                <option value="">所有月份</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dayFilter">日期:</label>
+                            <select id="dayFilter">
+                                <option value="">所有日期</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="deviceFilter">设备:</label>
+                            <select id="deviceFilter">
+                                <option value="">所有设备</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="formatFilter">格式:</label>
+                            <select id="formatFilter">
+                                <option value="">所有格式</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button id="filterBtn" class="filter-btn">筛选</button>
+                        <button id="resetBtn" class="reset-btn">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片展示区域 -->
+            <div class="gallery-area">
+                <div class="image-container">
+                    <img id="mainImage" src="" alt="风景照片" class="main-image">
+                    <div class="loading" id="loading">加载中...</div>
+                    <div class="image-overlay">
+                        <div class="image-info" id="imageInfo">
+                            <h3 id="imageName">-</h3>                            <div class="info-grid">
+                                <div class="info-row">
+                                    <span class="info-label">作者:</span>
+                                    <span id="imageAuthor">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">时间:</span>
+                                    <span id="imageDate">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">设备:</span>
+                                    <span id="imageDevice">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">光圈:</span>
+                                    <span id="imageAperture">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">快门:</span>
+                                    <span id="imageShutter">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">焦距:</span>
+                                    <span id="imageFocal">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">格式:</span>
+                                    <span id="imageFormat">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">大小:</span>
+                                    <span id="imageSize">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导航控制 -->
+                <div class="controls" id="imageControls">
+                    <button class="nav-btn" id="prevBtn" onclick="previousImage()">
+                        <span>‹</span>
+                    </button>
+                    <div class="image-counter">
+                        <span id="currentIndex">1</span> / <span id="totalImages">1</span>
+                    </div>
+                    <button class="nav-btn" id="nextBtn" onclick="nextImage()">
+                        <span>›</span>
+                    </button>
+                </div>
+            </div>            <!-- 缩略图预览 -->
+            <div class="thumbnails" id="thumbnails">
+                <!-- 缩略图将通过JavaScript动态生成 -->
+            </div>
+        </main>
+        
+        <!-- 底部版权信息 -->
+        <footer class="footer">
+            <div class="copyright">©Wraindy⭐ · 醉卧不知天在水，满船清梦压星河。</div>
+        </footer>
+    </div><script src="data.js"></script>
+    <script src="metadata.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

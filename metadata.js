@@ -1,0 +1,66 @@
+﻿// Auto-generated filter metadata
+// Generated: 2025-06-24 19:38:03
+
+const filterMetadata = {
+    "years":  2025,
+    "months":  [
+                   1,
+                   2,
+                   3,
+                   4,
+                   5,
+                   6,
+                   7,
+                   8,
+                   9,
+                   10,
+                   11,
+                   12
+               ],
+    "days":  [
+                 1,
+                 2,
+                 3,
+                 4,
+                 5,
+                 6,
+                 7,
+                 8,
+                 9,
+                 10,
+                 11,
+                 12,
+                 13,
+                 14,
+                 15,
+                 16,
+                 17,
+                 18,
+                 19,
+                 20,
+                 21,
+                 22,
+                 23,
+                 24,
+                 25,
+                 26,
+                 27,
+                 28,
+                 29,
+                 30,
+                 31
+             ],
+    "devices":  "NIKON CORPORATION NIKON Z 30",
+    "formats":  [
+                    "JPG",
+                    "PNG"
+                ],
+    "authors":  "Unknown",
+    "totalImages":  2,
+    "lastUpdated":  "2025-06-24 19:38:03"
+};
+
+// Export metadata
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = filterMetadata;
+}
