@@ -10,24 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="page-container">
-        <!-- 头部标题区域 -->
-        <header class="header">            <div class="header-top">
-                <div class="header-left">
-                    <!-- 留空，保持布局平衡 -->
-                </div>
-                <div class="header-right">
-                    <div class="real-time-clock" id="realTimeClock">
-                        <span id="currentTime">00:00</span>
-                        <span id="currentDate">2024-01-01</span>
-                    </div>
-                    <div class="theme-controls">
-                        <button id="themeToggle" class="theme-btn" title="切换主题">
-                            <span class="theme-icon">🌙</span>
-                        </button>
-                    </div>
-                </div>
-            </div>            <h1 class="title">Wraindy摄影展</h1>
+    <div class="page-container">        <!-- 头部标题区域 -->
+        <header class="header">
+            <h1 class="title">Wraindy摄影展</h1>
         </header><!-- 主要展示区域 -->
         <main class="main-content">
             <!-- 可折叠筛选控制面板 -->
@@ -138,10 +123,25 @@
                 <!-- 缩略图将通过JavaScript动态生成 -->
             </div>
         </main>
-        
-        <!-- 底部版权信息 -->
+          <!-- 底部版权信息 -->
         <footer class="footer">
-            <div class="copyright">©Wraindy⭐ · 醉卧不知天在水，满船清梦压星河。</div>
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="real-time-clock" id="realTimeClock">
+                        <span id="currentTime">00:00</span> · <span id="currentDate">2024-01-01</span>
+                    </div>
+                </div>
+                <div class="footer-center">
+                    <div class="copyright">©Wraindy⭐ · 醉卧不知天在水，满船清梦压星河。</div>
+                </div>
+                <div class="footer-right">
+                    <div class="theme-controls">
+                        <button id="themeToggle" class="theme-btn" title="切换主题">
+                            <span class="theme-icon">🌙</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </footer>
     </div><script src="data.js"></script>
     <script src="metadata.js"></script>
