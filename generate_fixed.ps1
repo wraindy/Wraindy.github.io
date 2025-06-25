@@ -1,8 +1,10 @@
 Add-Type -AssemblyName System.Drawing
 
 $imagesFolder = Join-Path $PSScriptRoot "images"
-$dataFile = Join-Path $PSScriptRoot "data.js"
-$metadataFile = Join-Path $PSScriptRoot "metadata.js"
+$csvFile = Join-Path $PSScriptRoot "data.csv"
+$jsonFile = Join-Path $PSScriptRoot "metadata.json"
+$dataJsFile = Join-Path $PSScriptRoot "data.js"
+$metadataJsFile = Join-Path $PSScriptRoot "metadata.js"
 
 Write-Host "=== Wraindy Image Data Extractor ==="
 Write-Host ""
@@ -116,8 +118,36 @@ Write-Host "Sorting by date..."
 
 $imageArray = $imageArray | Sort-Object shotDate
 
-# Generate image data file
-# Always ensure it's an array format
+# Generate CSV data file
+Write-Host "Generating CSV data file..."
+
+# Create CSV header
+$csvHeader = "filename,name,author,shotDate,fileSize,device,aperture,shutterSpeed,focalLength,format,width,height"
+$csvContent = @($csvHeader)
+
+# Add data rows
+foreach ($img in $imageArray) {
+    $csvRow = @(
+        $img.filename,
+        $img.name,
+        $img.author,
+        $img.shotDate,
+        $img.fileSize,
+        $img.device,
+        $img.aperture,
+        $img.shutterSpeed,
+        $img.focalLength,
+        $img.format,
+        $img.width,
+        $img.height
+    ) -join ","
+    $csvContent += $csvRow
+}
+
+$csvContent | Out-File -FilePath $csvFile -Encoding UTF8
+Write-Host "CSV data saved to: data.csv"
+
+# Generate JavaScript version for browser compatibility
 $jsonData = if ($imageArray.Count -eq 1) {
     "[$($imageArray | ConvertTo-Json -Depth 3)]"
 } else {
@@ -131,14 +161,19 @@ $jsContent = @"
 
 const imageDatabase = $jsonData;
 
-// Export data
+// Export for browser use
+if (typeof window !== 'undefined') {
+    window.imageDatabase = imageDatabase;
+}
+
+// Export for Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = imageDatabase;
 }
 "@
 
-$jsContent | Out-File -FilePath $dataFile -Encoding UTF8
-Write-Host "Image data saved to: data.js"
+$jsContent | Out-File -FilePath $dataJsFile -Encoding UTF8
+Write-Host "JavaScript data saved to: data.js"
 
 # Generate metadata for filters
 Write-Host "Generating filter metadata..."
@@ -153,32 +188,42 @@ $formats = $imageArray | ForEach-Object { $_.format } | Sort-Object -Unique
 $authors = $imageArray | ForEach-Object { $_.author } | Sort-Object -Unique
 
 $metadata = [PSCustomObject]@{
-    years = $years
-    months = 1..12
-    days = 1..31
-    devices = $devices
-    formats = $formats
-    authors = $authors
+    years = @($years)
+    months = @(1..12)
+    days = @(1..31)
+    devices = @($devices)
+    formats = @($formats)
+    authors = @($authors)
     totalImages = $imageArray.Count
     lastUpdated = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 }
 
 $metadataJson = $metadata | ConvertTo-Json -Depth 3
 
-$metadataContent = @"
+# Save JSON version
+$metadataJson | Out-File -FilePath $jsonFile -Encoding UTF8
+Write-Host "Filter metadata saved to: metadata.json"
+
+# Save JavaScript version
+$metadataJsContent = @"
 // Auto-generated filter metadata
 // Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
 const filterMetadata = $metadataJson;
 
-// Export metadata
+// Export for browser use
+if (typeof window !== 'undefined') {
+    window.filterMetadata = filterMetadata;
+}
+
+// Export for Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = filterMetadata;
 }
 "@
 
-$metadataContent | Out-File -FilePath $metadataFile -Encoding UTF8
-Write-Host "Filter metadata saved to: metadata.js"
+$metadataJsContent | Out-File -FilePath $metadataJsFile -Encoding UTF8
+Write-Host "JavaScript metadata saved to: metadata.js"
 
 Write-Host ""
 Write-Host "Statistics:"
@@ -188,3 +233,8 @@ Write-Host "  - Image formats: $($formats.Count) ($($formats -join ', '))"
 Write-Host "  - Years: $($years -join ', ')"
 Write-Host ""
 Write-Host "Data extraction completed successfully!"
+Write-Host "Generated files:"
+Write-Host "  - data.csv (CSV format)"
+Write-Host "  - data.js (JavaScript format for browsers)"
+Write-Host "  - metadata.json (JSON format)"
+Write-Host "  - metadata.js (JavaScript format for browsers)"

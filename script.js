@@ -30,8 +30,15 @@ function updateClock() {
         day: '2-digit'
     });
     
-    document.getElementById('currentTime').textContent = timeString;
-    document.getElementById('currentDate').textContent = dateString;
+    const timeEl = document.getElementById('currentTime');
+    const dateEl = document.getElementById('currentDate');
+    
+    if (timeEl) {
+        timeEl.textContent = timeString;
+    }
+    if (dateEl) {
+        dateEl.textContent = dateString;
+    }
 }
 
 // 初始化主题系统
@@ -80,33 +87,48 @@ function toggleTheme() {
 // 加载图片数据库
 function loadImageDatabase() {
     try {
-        // 从 data.js 获取图片数据
-        if (typeof imageDatabase === 'undefined') {
+        // 检查数据是否已通过script标签加载
+        if (typeof window.imageDatabase === 'undefined' && typeof imageDatabase === 'undefined') {
             console.error('未找到图片数据库，请先运行批处理生成 data.js');
             showNoImagesMessage();
             return;
         }
         
-        allImageData = imageDatabase;
+        // 使用全局变量或window对象中的数据
+        allImageData = window.imageDatabase || imageDatabase;
         
-        if (allImageData.length === 0) {
+        if (!allImageData || allImageData.length === 0) {
             showNoImagesMessage();
             return;
         }
 
-        // 初始化筛选器（使用metadata.js）
+        // 检查筛选条件数据
+        if (typeof window.filterMetadata !== 'undefined' || typeof filterMetadata !== 'undefined') {
+            window.filterMetadata = window.filterMetadata || filterMetadata;
+        } else {
+            // 如果没有筛选条件数据，从图片数据中生成
+            generateFilterMetadataFromData();
+        }
+        
+        // 初始化筛选器
         setupFilterOptions();
         
         // 初始化筛选面板折叠功能
         setupFilterToggle();
-        
-        // 初始显示所有图片
+          // 初始显示所有图片
         filteredImages = [...allImageData];
         
         // 生成界面
         generateThumbnails();
-        showImage(0);
-        updateImageCounter();
+        
+        // 确保DOM已完全加载后再显示图片
+        setTimeout(() => {
+            if (filteredImages.length > 0) {
+                showImage(0);
+                updateImageCounter();
+                showImageControls();
+            }
+        }, 100);
         
         // 设置事件监听
         setupEventListeners();
@@ -147,9 +169,9 @@ function setupFilterOptions() {
     const deviceFilter = document.getElementById('deviceFilter');
     const formatFilter = document.getElementById('formatFilter');
     
-    // 优先使用 metadata.js 的数据
-    if (typeof filterMetadata !== 'undefined') {
-        console.log('使用 metadata.js 中的筛选条件');
+    // 使用加载的 filterMetadata
+    if (window.filterMetadata) {
+        console.log('使用 metadata.json 中的筛选条件');
         
         // 填充年份
         if (filterMetadata.years && Array.isArray(filterMetadata.years)) {
@@ -251,6 +273,43 @@ function setupEventListeners() {
     setupTouchGestures();
 }
 
+// 键盘导航处理
+function handleKeyboardNavigation(event) {
+    if (!filteredImages || filteredImages.length === 0) {
+        return;
+    }
+    
+    switch(event.key) {
+        case 'ArrowLeft':
+            event.preventDefault();
+            if (currentImageIndex > 0) {
+                showImage(currentImageIndex - 1);
+            }
+            break;
+        case 'ArrowRight':
+            event.preventDefault();
+            if (currentImageIndex < filteredImages.length - 1) {
+                showImage(currentImageIndex + 1);
+            }
+            break;
+        case 'Home':
+            event.preventDefault();
+            showImage(0);
+            break;
+        case 'End':
+            event.preventDefault();
+            showImage(filteredImages.length - 1);
+            break;
+        case 'Escape':
+            event.preventDefault();
+            // 如果全屏，退出全屏
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            break;
+    }
+}
+
 // 应用筛选
 function applyFilters() {
     const yearFilter = document.getElementById('yearFilter').value;
@@ -300,13 +359,23 @@ function resetFilters() {
     document.getElementById('deviceFilter').value = '';
     document.getElementById('formatFilter').value = '';
     
+    // 确保有数据可用
+    if (!allImageData || allImageData.length === 0) {
+        console.error('没有图片数据可用于重置');
+        return;
+    }
+    
     filteredImages = [...allImageData];
     
     generateThumbnails();
     currentImageIndex = 0;
-    showImage(0);
-    updateImageCounter();
-    showImageControls();
+    
+    // 只在有图片时才显示
+    if (filteredImages.length > 0) {
+        showImage(0);
+        updateImageCounter();
+        showImageControls();
+    }
     
     // 重置后也自动折叠筛选面板
     const filterPanel = document.getElementById('filterPanel');
@@ -319,12 +388,30 @@ function resetFilters() {
 
 // 显示图片
 function showImage(index) {
-    if (index < 0 || index >= filteredImages.length) return;
+    if (!filteredImages || filteredImages.length === 0) {
+        console.error('没有可显示的图片');
+        return;
+    }
+    
+    if (index < 0 || index >= filteredImages.length) {
+        console.error('图片索引超出范围:', index, '总数:', filteredImages.length);
+        return;
+    }
     
     currentImageIndex = index;
     const imageInfo = filteredImages[index];
     const mainImage = document.getElementById('mainImage');
     const loading = document.getElementById('loading');
+    
+    if (!mainImage) {
+        console.error('找不到主图片元素');
+        return;
+    }
+    
+    if (!loading) {
+        console.error('找不到加载提示元素');
+        return;
+    }
     
     // 显示加载状态
     loading.style.display = 'block';
@@ -354,15 +441,30 @@ function showImage(index) {
 
 // 更新图片信息
 function updateImageInfo(imageInfo) {
-    document.getElementById('imageName').textContent = imageInfo.name;
-    document.getElementById('imageAuthor').textContent = imageInfo.author || '未知';
-    document.getElementById('imageDate').textContent = imageInfo.shotDate;
-    document.getElementById('imageDevice').textContent = imageInfo.device || '未知';
-    document.getElementById('imageAperture').textContent = imageInfo.aperture || '未知';
-    document.getElementById('imageShutter').textContent = imageInfo.shutterSpeed || '未知';
-    document.getElementById('imageFocal').textContent = imageInfo.focalLength || '未知';
-    document.getElementById('imageFormat').textContent = imageInfo.format;
-    document.getElementById('imageSize').textContent = imageInfo.fileSize;
+    if (!imageInfo) {
+        console.error('图片信息为空');
+        return;
+    }
+    
+    // 安全设置元素内容
+    const setElementText = (id, text) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = text;
+        } else {
+            console.warn(`找不到元素: ${id}`);
+        }
+    };
+    
+    setElementText('imageName', imageInfo.name || '未知');
+    setElementText('imageAuthor', imageInfo.author || '未知');
+    setElementText('imageDate', imageInfo.shotDate || '未知');
+    setElementText('imageDevice', imageInfo.device || '未知');
+    setElementText('imageAperture', imageInfo.aperture || '未知');
+    setElementText('imageShutter', imageInfo.shutterSpeed || '未知');
+    setElementText('imageFocal', imageInfo.focalLength || '未知');
+    setElementText('imageFormat', imageInfo.format || '未知');
+    setElementText('imageSize', imageInfo.fileSize || '未知');
 }
 
 // 生成缩略图
@@ -408,14 +510,25 @@ function updateNavigationButtons() {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     
-    prevBtn.disabled = currentImageIndex === 0;
-    nextBtn.disabled = currentImageIndex === filteredImages.length - 1;
+    if (prevBtn) {
+        prevBtn.disabled = currentImageIndex === 0;
+    }
+    if (nextBtn) {
+        nextBtn.disabled = !filteredImages || currentImageIndex === filteredImages.length - 1;
+    }
 }
 
 // 更新图片计数器
 function updateImageCounter() {
-    document.getElementById('currentIndex').textContent = currentImageIndex + 1;
-    document.getElementById('totalImages').textContent = filteredImages.length;
+    const currentIndexEl = document.getElementById('currentIndex');
+    const totalImagesEl = document.getElementById('totalImages');
+    
+    if (currentIndexEl) {
+        currentIndexEl.textContent = currentImageIndex + 1;
+    }
+    if (totalImagesEl) {
+        totalImagesEl.textContent = filteredImages ? filteredImages.length : 0;
+    }
 }
 
 // 上一张图片
@@ -435,6 +548,11 @@ function nextImage() {
 // 显示无图片提示
 function showNoImagesMessage() {
     const imageContainer = document.querySelector('.image-container');
+    if (!imageContainer) {
+        console.error('找不到图片容器元素');
+        return;
+    }
+    
     imageContainer.innerHTML = `
         <div class="no-images">
             <h3>暂无符合条件的图片</h3>
@@ -451,10 +569,15 @@ function showNoImagesMessage() {
 // 显示图片加载错误
 function showImageError(filename) {
     const imageContainer = document.querySelector('.image-container');
+    if (!imageContainer) {
+        console.error('找不到图片容器元素');
+        return;
+    }
+    
     imageContainer.innerHTML = `
         <div class="no-images">
             <h3>图片载入失败</h3>
-            <p>无法载入图片: ${filename}</p>
+            <p>无法载入图片: ${filename || '未知文件'}</p>
             <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">
                 请检查文件是否存在于 images 文件夹中
             </p>
@@ -464,19 +587,38 @@ function showImageError(filename) {
 
 // 隐藏图片控制按钮
 function hideImageControls() {
-    document.getElementById('imageControls').style.display = 'none';
-    document.getElementById('thumbnails').style.display = 'none';
+    const imageControls = document.getElementById('imageControls');
+    const thumbnails = document.getElementById('thumbnails');
+    
+    if (imageControls) {
+        imageControls.style.display = 'none';
+    }
+    if (thumbnails) {
+        thumbnails.style.display = 'none';
+    }
 }
 
 // 显示图片控制按钮
 function showImageControls() {
-    document.getElementById('imageControls').style.display = 'flex';
-    document.getElementById('thumbnails').style.display = 'flex';
+    const imageControls = document.getElementById('imageControls');
+    const thumbnails = document.getElementById('thumbnails');
+    
+    if (imageControls) {
+        imageControls.style.display = 'flex';
+    }
+    if (thumbnails) {
+        thumbnails.style.display = 'flex';
+    }
 }
 
 // 设置图片双击事件
 function setupImageDoubleClick(imageInfo) {
     const mainImage = document.getElementById('mainImage');
+    
+    if (!mainImage) {
+        console.warn('找不到主图片元素，无法设置双击事件');
+        return;
+    }
     
     // 移除之前的事件监听器，避免重复绑定
     mainImage.removeEventListener('dblclick', handleImageDoubleClick);
@@ -641,4 +783,119 @@ function openImageInNewTab(imageInfo) {
         // 如果弹窗被阻止，使用传统方式
         window.open(imageUrl, '_blank');
     }
+}
+
+// 解析CSV数据
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+    const data = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        const row = {};
+        
+        headers.forEach((header, index) => {
+            let value = values[index];
+            
+            // 转换数据类型
+            if (header === 'width' || header === 'height') {
+                value = parseInt(value, 10);
+            }
+            
+            row[header] = value;
+        });
+        
+        data.push(row);
+    }
+    
+    return data;
+}
+
+// 加载筛选条件元数据
+async function loadFilterMetadata() {
+    try {
+        const response = await fetch('metadata.json');
+        if (!response.ok) {
+            throw new Error('无法加载 metadata.json 文件');
+        }
+        
+        window.filterMetadata = await response.json();
+        console.log('成功加载筛选条件元数据');
+    } catch (error) {
+        console.error('加载筛选条件失败:', error);
+        // 如果加载失败，从图片数据中提取筛选条件
+        generateFilterMetadataFromData();
+    }
+}
+
+// 从图片数据中生成筛选条件
+function generateFilterMetadataFromData() {
+    if (!allImageData || allImageData.length === 0) {
+        return;
+    }
+    
+    const years = [...new Set(allImageData.map(img => {
+        const date = new Date(img.shotDate.replace(' ', 'T'));
+        return date.getFullYear();
+    }))].sort((a, b) => b - a);
+    
+    const devices = [...new Set(allImageData.map(img => img.device))].sort();
+    const formats = [...new Set(allImageData.map(img => img.format))].sort();
+    const authors = [...new Set(allImageData.map(img => img.author))].sort();
+    
+    window.filterMetadata = {
+        years: years,
+        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        devices: devices,
+        formats: formats,
+        authors: authors,
+        totalImages: allImageData.length,
+        lastUpdated: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    };
+    
+    console.log('从数据中生成筛选条件');
+}
+
+// 触摸手势支持
+function setupTouchGestures() {
+    const imageContainer = document.querySelector('.image-container');
+    if (!imageContainer) {
+        return;
+    }
+    
+    let startX = 0;
+    let startY = 0;
+    
+    imageContainer.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    imageContainer.addEventListener('touchend', function(e) {
+        if (!e.changedTouches[0]) {
+            return;
+        }
+        
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = startX - endX;
+        const diffY = startY - endY;
+        
+        // 水平滑动距离大于垂直滑动距离，且超过最小阈值
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                // 向左滑动，显示下一张
+                if (currentImageIndex < filteredImages.length - 1) {
+                    showImage(currentImageIndex + 1);
+                }
+            } else {
+                // 向右滑动，显示上一张
+                if (currentImageIndex > 0) {
+                    showImage(currentImageIndex - 1);
+                }
+            }
+        }
+    }, { passive: true });
 }

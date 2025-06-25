@@ -53,8 +53,8 @@ wraindy-exhibition/
 ├── script.js           # 主要逻辑
 ├── generate_data.bat   # 批处理入口
 ├── generate_fixed.ps1  # PowerShell数据提取脚本
-├── data.js             # 自动生成的图片数据
-├── metadata.js         # 自动生成的筛选条件
+├── data.csv            # 自动生成的图片数据（CSV格式）
+├── metadata.json       # 自动生成的筛选条件（JSON格式）
 ├── test.html           # 系统测试页面
 ├── images/             # 图片存储文件夹
 │   └── *.{jpg,png,gif,webp}
@@ -63,34 +63,22 @@ wraindy-exhibition/
 
 ## 🔧 数据格式
 
-### data.js 结构
-```javascript
-const imageDatabase = [{
-    filename: "DSC_5987.png",
-    name: "DSC_5987",
-    author: "Unknown",
-    shotDate: "2025-06-23 19:44",
-    fileSize: "9.27 MB",
-    device: "Canon EOS R5",
-    aperture: "f/2.8",
-    shutterSpeed: "1/125",
-    focalLength: "85mm",
-    format: "PNG",
-    width: 4590,
-    height: 2759
-}];
+### data.csv 结构
+```csv
+filename,name,author,shotDate,fileSize,device,aperture,shutterSpeed,focalLength,format,width,height
+DSC_5987.png,DSC_5987,Unknown,2025-06-23 19:44,9.27 MB,Canon EOS R5,f/2.8,1/125,85mm,PNG,4590,2759
 ```
 
-### metadata.js 结构
-```javascript
-const filterMetadata = {
-    years: [2025],
-    devices: ["Canon EOS R5", "iPhone"],
-    formats: ["PNG", "JPG"],
-    authors: ["Unknown"],
-    totalImages: 1,
-    lastUpdated: "2025-06-24 19:21:54"
-};
+### metadata.json 结构
+```json
+{
+    "years": [2025],
+    "devices": ["Canon EOS R5", "iPhone"],
+    "formats": ["PNG", "JPG"],
+    "authors": ["Unknown"],
+    "totalImages": 1,
+    "lastUpdated": "2025-06-24 19:21:54"
+}
 ```
 
 ## 🎨 界面功能

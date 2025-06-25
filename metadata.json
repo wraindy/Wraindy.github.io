@@ -1,7 +1,4 @@
-﻿// Auto-generated filter metadata
-// Generated: 2025-06-26 07:32:17
-
-const filterMetadata = {
+﻿{
     "years":  [
                   2025
               ],
@@ -64,14 +61,4 @@ const filterMetadata = {
                 ],
     "totalImages":  3,
     "lastUpdated":  "2025-06-26 07:32:17"
-};
-
-// Export for browser use
-if (typeof window !== 'undefined') {
-    window.filterMetadata = filterMetadata;
-}
-
-// Export for Node.js
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = filterMetadata;
 }

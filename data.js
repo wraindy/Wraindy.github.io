@@ -1,6 +1,6 @@
 ﻿// Auto-generated image database
-// Generated: 2025-06-24 19:38:03
-// Contains 2 images
+// Generated: 2025-06-26 07:32:17
+// Contains 3 images
 
 const imageDatabase = [
     {
@@ -30,10 +30,29 @@ const imageDatabase = [
         "format":  "PNG",
         "width":  4590,
         "height":  2759
+    },
+    {
+        "filename":  "DSC_6056.JPG",
+        "name":  "DSC_6056",
+        "author":  "Unknown",
+        "shotDate":  "2025-06-25 22:26",
+        "fileSize":  "11.05 MB",
+        "device":  "NIKON CORPORATION NIKON Z 30",
+        "aperture":  "Unknown",
+        "shutterSpeed":  "Unknown",
+        "focalLength":  "Unknown",
+        "format":  "JPG",
+        "width":  5538,
+        "height":  3692
     }
 ];
 
-// Export data
+// Export for browser use
+if (typeof window !== 'undefined') {
+    window.imageDatabase = imageDatabase;
+}
+
+// Export for Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = imageDatabase;
 }
