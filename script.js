@@ -649,129 +649,281 @@ function openImageInNewTab(imageInfo) {
                 <style>
                     body {
                         margin: 0;
-                        padding: 20px;
+                        padding: 0;
                         background: #000;
                         display: flex;
-                        flex-direction: column;
                         align-items: center;
                         justify-content: center;
                         min-height: 100vh;
                         font-family: 'Noto Serif SC', serif;
                         color: #fff;
+                        overflow: hidden;
                     }
-                    .image-container {
-                        max-width: 95vw;
-                        max-height: 85vh;
-                        text-align: center;
-                    }
-                    .full-image {
-                        max-width: 100%;
-                        max-height: 100%;
-                        object-fit: contain;
-                        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
-                        border-radius: 8px;
-                    }
-                    .image-details {
-                        margin-top: 20px;
-                        background: rgba(255, 255, 255, 0.1);
-                        padding: 15px;
-                        border-radius: 8px;
-                        max-width: 600px;
-                        backdrop-filter: blur(10px);
-                    }
-                    .detail-title {
-                        font-size: 1.5rem;
-                        color: #c9b037;
-                        margin-bottom: 10px;
-                        text-align: center;
-                    }
-                    .detail-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                        gap: 8px;
-                        font-size: 0.9rem;
-                    }
-                    .detail-item {
+                    
+                    .image-viewer {
+                        position: relative;
+                        width: 100vw;
+                        height: 100vh;
                         display: flex;
-                        justify-content: space-between;
-                        padding: 5px 0;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                        align-items: center;
+                        justify-content: center;
                     }
-                    .detail-label {
-                        color: #b8b8b8;
-                        font-weight: 500;
+                    
+                    .full-image {
+                        max-width: 95vw;
+                        max-height: 95vh;
+                        object-fit: contain;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                        border-radius: 8px;
+                        transition: all 0.3s ease;
                     }
-                    .detail-value {
-                        color: #fff;
-                        font-weight: 400;
-                    }
-                    .close-hint {
+                    
+                    .controls {
                         position: fixed;
                         top: 20px;
                         right: 20px;
+                        display: flex;
+                        gap: 10px;
+                        z-index: 1000;
+                    }
+                    
+                    .control-btn {
+                        background: rgba(0, 0, 0, 0.7);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        color: #fff;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        backdrop-filter: blur(10px);
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .control-btn:hover {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-color: rgba(255, 255, 255, 0.4);
+                    }
+                    
+                    .image-details {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+                        backdrop-filter: blur(15px);
+                        padding: 40px 30px 20px 30px;
+                        transform: translateY(100%);
+                        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        z-index: 999;
+                    }
+                    
+                    .image-details.visible {
+                        transform: translateY(0);
+                    }
+                    
+                    .detail-content {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        display: grid;
+                        grid-template-columns: auto 1fr;
+                        gap: 30px;
+                        align-items: start;
+                    }
+                    
+                    .detail-title {
+                        font-size: 1.8rem;
+                        color: #c9b037;
+                        margin-bottom: 15px;
+                        grid-column: span 2;
+                        text-align: center;
+                        font-weight: 300;
+                    }
+                    
+                    .detail-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 15px;
+                        font-size: 0.95rem;
+                    }
+                    
+                    .detail-item {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        padding: 12px;
+                        background: rgba(255, 255, 255, 0.05);
+                        border-radius: 8px;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+                    
+                    .detail-label {
+                        color: #c9b037;
+                        font-weight: 500;
+                        font-size: 0.85rem;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .detail-value {
+                        color: #fff;
+                        font-weight: 400;
+                        font-size: 1rem;
+                    }
+                    
+                    .toggle-info-btn {
+                        position: fixed;
+                        bottom: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(0, 0, 0, 0.8);
+                        border: 1px solid rgba(201, 176, 55, 0.6);
+                        color: #c9b037;
+                        padding: 12px 24px;
+                        border-radius: 25px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        backdrop-filter: blur(10px);
+                        transition: all 0.3s ease;
+                        z-index: 1001;
+                    }
+                    
+                    .toggle-info-btn:hover {
+                        background: rgba(201, 176, 55, 0.2);
+                        border-color: #c9b037;
+                        color: #fff;
+                    }
+                    
+                    .close-hint {
+                        position: fixed;
+                        top: 20px;
+                        left: 20px;
                         color: #888;
                         font-size: 0.8rem;
+                        z-index: 1000;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .detail-content {
+                            grid-template-columns: 1fr;
+                            gap: 20px;
+                        }
+                        
+                        .detail-title {
+                            grid-column: span 1;
+                            font-size: 1.5rem;
+                        }
+                        
+                        .detail-grid {
+                            grid-template-columns: 1fr;
+                        }
+                        
+                        .image-details {
+                            padding: 30px 20px 15px 20px;
+                        }
                     }
                 </style>
             </head>
             <body>
-                <div class="close-hint">ESC 或点击关闭</div>
-                <div class="image-container">
+                <div class="image-viewer">
                     <img src="${imageUrl}" alt="${imageInfo.name}" class="full-image" />
                 </div>
-                <div class="image-details">
-                    <div class="detail-title">${imageInfo.name}</div>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <span class="detail-label">作者:</span>
-                            <span class="detail-value">${imageInfo.author || '未知'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">拍摄时间:</span>
-                            <span class="detail-value">${imageInfo.shotDate}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">设备:</span>
-                            <span class="detail-value">${imageInfo.device || '未知'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">光圈:</span>
-                            <span class="detail-value">${imageInfo.aperture || '未知'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">快门速度:</span>
-                            <span class="detail-value">${imageInfo.shutterSpeed || '未知'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">焦距:</span>
-                            <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">格式:</span>
-                            <span class="detail-value">${imageInfo.format}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">文件大小:</span>
-                            <span class="detail-value">${imageInfo.fileSize}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">分辨率:</span>
-                            <span class="detail-value">${imageInfo.width} × ${imageInfo.height}</span>
+                
+                <div class="close-hint">ESC 或点击关闭</div>
+                
+                <div class="controls">
+                    <button class="control-btn" onclick="window.close()">✕ 关闭</button>
+                </div>
+                
+                <button class="toggle-info-btn" onclick="toggleImageInfo()">
+                    📋 查看详情
+                </button>
+                
+                <div class="image-details" id="imageDetails">
+                    <div class="detail-content">
+                        <div class="detail-title">${imageInfo.name}</div>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">作者</span>
+                                <span class="detail-value">${imageInfo.author || '未知'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">拍摄时间</span>
+                                <span class="detail-value">${imageInfo.shotDate}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">设备</span>
+                                <span class="detail-value">${imageInfo.device || '未知'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">光圈</span>
+                                <span class="detail-value">${imageInfo.aperture || '未知'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">快门速度</span>
+                                <span class="detail-value">${imageInfo.shutterSpeed || '未知'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">焦距</span>
+                                <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">格式</span>
+                                <span class="detail-value">${imageInfo.format}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">文件大小</span>
+                                <span class="detail-value">${imageInfo.fileSize}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">分辨率</span>
+                                <span class="detail-value">${imageInfo.width} × ${imageInfo.height}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
                 <script>
+                    let infoVisible = false;
+                    
+                    function toggleImageInfo() {
+                        const details = document.getElementById('imageDetails');
+                        const toggleBtn = document.querySelector('.toggle-info-btn');
+                        
+                        infoVisible = !infoVisible;
+                        
+                        if (infoVisible) {
+                            details.classList.add('visible');
+                            toggleBtn.innerHTML = '📋 隐藏详情';
+                        } else {
+                            details.classList.remove('visible');
+                            toggleBtn.innerHTML = '📋 查看详情';
+                        }
+                    }
+                    
                     // ESC键关闭窗口
                     document.addEventListener('keydown', function(e) {
                         if (e.key === 'Escape') {
-                            window.close();
+                            if (infoVisible) {
+                                toggleImageInfo();
+                            } else {
+                                window.close();
+                            }
                         }
                     });
                     
-                    // 点击图片外区域关闭窗口
-                    document.body.addEventListener('click', function(e) {
-                        if (e.target === document.body) {
-                            window.close();
+                    // 点击图片外区域关闭信息面板
+                    document.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('image-viewer') || e.target.classList.contains('full-image')) {
+                            if (infoVisible) {
+                                toggleImageInfo();
+                            }
+                        }
+                    });
+                    
+                    // 键盘快捷键
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'i' || e.key === 'I') {
+                            toggleImageInfo();
                         }
                     });
                 </script>
