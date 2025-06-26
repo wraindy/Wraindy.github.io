@@ -448,9 +448,8 @@ function showImage(index) {
         updateThumbnailSelection();
         updateNavigationButtons();
         updateImageCounter();
-        
-        // 添加双击事件监听器
-        setupImageDoubleClick(imageInfo);
+          // 为当前图片设置双击事件
+        setupImageDoubleClick();
     };
     
     img.onerror = function() {
@@ -636,7 +635,7 @@ function showImageControls() {
 }
 
 // 设置图片双击事件
-function setupImageDoubleClick(imageInfo) {
+function setupImageDoubleClick() {
     const mainImage = document.getElementById('mainImage');
     
     if (!mainImage) {
@@ -645,14 +644,22 @@ function setupImageDoubleClick(imageInfo) {
     }
     
     // 移除之前的事件监听器，避免重复绑定
-    mainImage.removeEventListener('dblclick', handleImageDoubleClick);
+    if (mainImage._doubleClickHandler) {
+        mainImage.removeEventListener('dblclick', mainImage._doubleClickHandler);
+    }
+      // 创建新的双击事件处理器，获取当前显示图片的实时数据
+    mainImage._doubleClickHandler = function() {
+        // 获取当前显示的图片信息
+        const currentImageInfo = filteredImages[currentImageIndex];
+        if (currentImageInfo) {
+            openImageInNewTab(currentImageInfo);
+        } else {
+            console.error('无法获取当前图片信息');
+        }
+    };
     
     // 添加新的双击事件监听器
-    function handleImageDoubleClick() {
-        openImageInNewTab(imageInfo);
-    }
-    
-    mainImage.addEventListener('dblclick', handleImageDoubleClick);
+    mainImage.addEventListener('dblclick', mainImage._doubleClickHandler);
 }
 
 // 在新标签页中打开图片
@@ -953,22 +960,21 @@ function openImageInNewTab(imageInfo) {
                         
                         <div class="detail-section">
                             <div class="section-title">拍摄参数</div>
-                            <div class="detail-grid">
-                                <div class="detail-item">
+                            <div class="detail-grid">                                <div class="detail-item">
                                     <span class="detail-label">光圈</span>
-                                    <span class="detail-value">${imageInfo.aperture || '未知'}</span>
+                                    <span class="detail-value">${imageInfo.aperture && imageInfo.aperture !== 'Unknown' ? imageInfo.aperture : '未知'}</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="detail-label">快门速度</span>
-                                    <span class="detail-value">${imageInfo.shutterSpeed || '未知'}</span>
+                                    <span class="detail-value">${imageInfo.shutterSpeed && imageInfo.shutterSpeed !== 'Unknown' ? imageInfo.shutterSpeed : '未知'}</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="detail-label">焦距</span>
-                                    <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
+                                    <span class="detail-value">${imageInfo.focalLength && imageInfo.focalLength !== 'Unknown' ? imageInfo.focalLength : '未知'}</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="detail-label">ISO</span>
-                                    <span class="detail-value">${imageInfo.iso || '未知'}</span>
+                                    <span class="detail-value">${imageInfo.iso && imageInfo.iso !== 'Unknown' ? imageInfo.iso : '未知'}</span>
                                 </div>
                             </div>
                         </div>
