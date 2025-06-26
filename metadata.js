@@ -1,5 +1,5 @@
 ﻿// Auto-generated filter metadata
-// Generated: 2025-06-26 08:25:37
+// Generated: 2025-06-26 08:28:28
 
 const filterMetadata = {
     "years":  [
@@ -66,8 +66,8 @@ const filterMetadata = {
                     "Unknown",
                     "Wraindy"
                 ],
-    "totalImages":  3,
-    "lastUpdated":  "2025-06-26 08:25:37"
+    "totalImages":  9,
+    "lastUpdated":  "2025-06-26 08:28:28"
 };
 
 // Export for browser use
