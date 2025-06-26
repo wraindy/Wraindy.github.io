@@ -417,14 +417,14 @@ function showImage(index) {
     loading.style.display = 'block';
     mainImage.style.opacity = '0';
       // 加载图片
-    const img = new Image();
-    img.onload = function() {
+    const img = new Image();    img.onload = function() {
         mainImage.src = this.src;
         mainImage.style.opacity = '1';
         loading.style.display = 'none';
         updateImageInfo(imageInfo);
         updateThumbnailSelection();
         updateNavigationButtons();
+        updateImageCounter();
         
         // 添加双击事件监听器
         setupImageDoubleClick(imageInfo);
