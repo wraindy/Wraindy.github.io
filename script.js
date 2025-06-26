@@ -703,18 +703,20 @@ function openImageInNewTab(imageInfo) {
                         background: rgba(255, 255, 255, 0.1);
                         border-color: rgba(255, 255, 255, 0.4);
                     }
-                    
-                    .image-details {
+                      .image-details {
                         position: fixed;
                         bottom: 0;
                         left: 0;
                         right: 0;
                         background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
                         backdrop-filter: blur(15px);
-                        padding: 40px 30px 20px 30px;
+                        padding: 0;
                         transform: translateY(100%);
                         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                         z-index: 999;
+                        max-height: 60vh;
+                        overflow: hidden;
+                        border-top: 1px solid rgba(255, 255, 255, 0.1);
                     }
                     
                     .image-details.visible {
@@ -724,26 +726,68 @@ function openImageInNewTab(imageInfo) {
                     .detail-content {
                         max-width: 1200px;
                         margin: 0 auto;
-                        display: grid;
-                        grid-template-columns: auto 1fr;
-                        gap: 30px;
-                        align-items: start;
+                        padding: 40px 30px 20px 30px;
+                        max-height: 60vh;
+                        overflow-y: auto;
+                        overflow-x: hidden;
                     }
                     
-                    .detail-title {
+                    /* 自定义滚动条样式 */
+                    .detail-content::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    
+                    .detail-content::-webkit-scrollbar-track {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 4px;
+                    }
+                    
+                    .detail-content::-webkit-scrollbar-thumb {
+                        background: rgba(201, 176, 55, 0.6);
+                        border-radius: 4px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .detail-content::-webkit-scrollbar-thumb:hover {
+                        background: rgba(201, 176, 55, 0.8);
+                    }
+                    
+                    /* Firefox 滚动条 */
+                    .detail-content {
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(201, 176, 55, 0.6) rgba(255, 255, 255, 0.1);
+                    }
+                      .detail-title {
                         font-size: 1.8rem;
                         color: #c9b037;
-                        margin-bottom: 15px;
-                        grid-column: span 2;
+                        margin-bottom: 20px;
                         text-align: center;
                         font-weight: 300;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid rgba(201, 176, 55, 0.3);
                     }
                     
                     .detail-grid {
                         display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                         gap: 15px;
                         font-size: 0.95rem;
+                        margin-bottom: 20px;
+                    }
+                    
+                    .detail-section {
+                        margin-bottom: 25px;
+                    }
+                    
+                    .section-title {
+                        font-size: 1.2rem;
+                        color: #c9b037;
+                        margin-bottom: 15px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        border-bottom: 1px solid rgba(201, 176, 55, 0.3);
+                        padding-bottom: 8px;
                     }
                     
                     .detail-item {
@@ -801,24 +845,39 @@ function openImageInNewTab(imageInfo) {
                         font-size: 0.8rem;
                         z-index: 1000;
                     }
-                    
-                    @media (max-width: 768px) {
+                      @media (max-width: 768px) {
                         .detail-content {
-                            grid-template-columns: 1fr;
-                            gap: 20px;
+                            padding: 30px 20px 15px 20px;
+                            max-height: 70vh;
                         }
                         
                         .detail-title {
-                            grid-column: span 1;
                             font-size: 1.5rem;
+                            margin-bottom: 15px;
                         }
                         
                         .detail-grid {
                             grid-template-columns: 1fr;
+                            gap: 12px;
+                        }
+                        
+                        .section-title {
+                            font-size: 1rem;
+                            margin-bottom: 12px;
+                        }
+                        
+                        .detail-item {
+                            padding: 10px;
+                        }
+                        
+                        .toggle-info-btn {
+                            bottom: 15px;
+                            padding: 10px 20px;
+                            font-size: 0.85rem;
                         }
                         
                         .image-details {
-                            padding: 30px 20px 15px 20px;
+                            max-height: 70vh;
                         }
                     }
                 </style>
@@ -837,46 +896,69 @@ function openImageInNewTab(imageInfo) {
                 <button class="toggle-info-btn" onclick="toggleImageInfo()">
                     📋 查看详情
                 </button>
-                
-                <div class="image-details" id="imageDetails">
+                  <div class="image-details" id="imageDetails">
                     <div class="detail-content">
                         <div class="detail-title">${imageInfo.name}</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">作者</span>
-                                <span class="detail-value">${imageInfo.author || '未知'}</span>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">基本信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">作者</span>
+                                    <span class="detail-value">${imageInfo.author || '未知'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">拍摄时间</span>
+                                    <span class="detail-value">${imageInfo.shotDate}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">设备</span>
+                                    <span class="detail-value">${imageInfo.device || '未知'}</span>
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">拍摄时间</span>
-                                <span class="detail-value">${imageInfo.shotDate}</span>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">拍摄参数</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">光圈</span>
+                                    <span class="detail-value">${imageInfo.aperture || '未知'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">快门速度</span>
+                                    <span class="detail-value">${imageInfo.shutterSpeed || '未知'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">焦距</span>
+                                    <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">设备</span>
-                                <span class="detail-value">${imageInfo.device || '未知'}</span>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">文件信息</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">格式</span>
+                                    <span class="detail-value">${imageInfo.format}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">文件大小</span>
+                                    <span class="detail-value">${imageInfo.fileSize}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">分辨率</span>
+                                    <span class="detail-value">${imageInfo.width} × ${imageInfo.height}</span>
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">光圈</span>
-                                <span class="detail-value">${imageInfo.aperture || '未知'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">快门速度</span>
-                                <span class="detail-value">${imageInfo.shutterSpeed || '未知'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">焦距</span>
-                                <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">格式</span>
-                                <span class="detail-value">${imageInfo.format}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">文件大小</span>
-                                <span class="detail-value">${imageInfo.fileSize}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">分辨率</span>
-                                <span class="detail-value">${imageInfo.width} × ${imageInfo.height}</span>
+                        </div>
+                        
+                        <!-- 预留扩展区域 -->
+                        <div class="detail-section" style="display: none;" id="additionalInfo">
+                            <div class="section-title">扩展信息</div>
+                            <div class="detail-grid">
+                                <!-- 这里可以添加更多字段，如GPS信息、色彩空间、镜头信息等 -->
                             </div>
                         </div>
                     </div>
