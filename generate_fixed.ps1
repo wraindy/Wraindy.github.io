@@ -26,6 +26,51 @@ Write-Host "Found $($imageFiles.Count) image files"
 Write-Host "Extracting EXIF data..."
 Write-Host ""
 
+# Helper function to parse EXIF rational values
+function Parse-Rational {
+    param($bytes)
+    if ($bytes.Length -ge 8) {
+        $numerator = [BitConverter]::ToUInt32($bytes, 0)
+        $denominator = [BitConverter]::ToUInt32($bytes, 4)
+        if ($denominator -ne 0) {
+            return $numerator / $denominator
+        }
+    }
+    return $null
+}
+
+# Helper function to format aperture
+function Format-Aperture {
+    param($value)
+    if ($value -ne $null) {
+        return "f/$([math]::Round($value, 1))"
+    }
+    return "Unknown"
+}
+
+# Helper function to format exposure time
+function Format-ExposureTime {
+    param($value)
+    if ($value -ne $null) {
+        if ($value -ge 1) {
+            return "$([math]::Round($value, 1))s"
+        } else {
+            $reciprocal = [math]::Round(1 / $value)
+            return "1/${reciprocal}s"
+        }
+    }
+    return "Unknown"
+}
+
+# Helper function to format focal length
+function Format-FocalLength {
+    param($value)
+    if ($value -ne $null) {
+        return "$([math]::Round($value, 0))mm"
+    }
+    return "Unknown"
+}
+
 $imageArray = @()
 
 foreach ($file in $imageFiles) {
@@ -34,63 +79,87 @@ foreach ($file in $imageFiles) {
     $fileInfo = Get-Item $file.FullName
     $sizeInMB = [math]::Round($fileInfo.Length / 1MB, 2)
     
+    # Initialize with default values
     $author = "Unknown"
-    $device = "Unknown"
+    $cameraMaker = "Unknown"
+    $cameraModel = "Unknown"
     $aperture = "Unknown"
     $shutterSpeed = "Unknown"
     $focalLength = "Unknown"
+    $iso = "Unknown"
     $shotDate = $fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm")
     $width = 0
-    $height = 0
-    
+    $height = 0    
     try {
         $image = [System.Drawing.Image]::FromFile($file.FullName)
         $width = $image.Width
         $height = $image.Height
         
-        # Try to get EXIF data
+        # Extract EXIF data with correct property IDs
         if ($image.PropertyItems.Count -gt 0) {
             foreach ($prop in $image.PropertyItems) {
                 switch ($prop.Id) {
-                    0x010F { 
-                        $make = [System.Text.Encoding]::ASCII.GetString($prop.Value).Trim([char]0)
+                    # Author/Artist (0x013B)
+                    0x013B { 
+                        $author = [System.Text.Encoding]::UTF8.GetString($prop.Value).Trim([char]0).Trim()
+                        if ([string]::IsNullOrWhiteSpace($author)) { $author = "Unknown" }
                     }
+                    # Camera Maker (0x010F)
+                    0x010F { 
+                        $cameraMaker = [System.Text.Encoding]::ASCII.GetString($prop.Value).Trim([char]0).Trim()
+                    }
+                    # Camera Model (0x0110)
                     0x0110 { 
-                        $model = [System.Text.Encoding]::ASCII.GetString($prop.Value).Trim([char]0)
+                        $cameraModel = [System.Text.Encoding]::ASCII.GetString($prop.Value).Trim([char]0).Trim()
+                    }
+                    # F-stop/Aperture (0x829D)
+                    0x829D { 
+                        $apertureValue = Parse-Rational $prop.Value
+                        $aperture = Format-Aperture $apertureValue
+                    }
+                    # Exposure Time/Shutter Speed (0x829A)
+                    0x829A { 
+                        $exposureValue = Parse-Rational $prop.Value
+                        $shutterSpeed = Format-ExposureTime $exposureValue
+                    }
+                    # Focal Length (0x920A)
+                    0x920A { 
+                        $focalValue = Parse-Rational $prop.Value
+                        $focalLength = Format-FocalLength $focalValue
+                    }
+                    # ISO Speed (0x8827)
+                    0x8827 { 
+                        if ($prop.Value.Length -ge 2) {
+                            $isoValue = [BitConverter]::ToUInt16($prop.Value, 0)
+                            $iso = "ISO $isoValue"
+                        }
+                    }
+                    # Date Time Original (0x9003)
+                    0x9003 { 
+                        $dateStr = [System.Text.Encoding]::ASCII.GetString($prop.Value).Trim([char]0)
+                        if ($dateStr -match "(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})") {
+                            $shotDate = "$($Matches[1])-$($Matches[2])-$($Matches[3]) $($Matches[4]):$($Matches[5])"
+                        }
                     }
                 }
-            }
-            
-            if ($make -and $model) {
-                $device = "$make $model"
-            } elseif ($make) {
-                $device = $make
-            } elseif ($model) {
-                $device = $model
             }
         }
         
         $image.Dispose()
     }
     catch {
-        # Fallback to filename-based detection
-        $fileName = $file.BaseName.ToUpper()
-        if ($fileName -match "DSC") {
-            $device = "Canon EOS R5"
-            $aperture = "f/2.8"
-            $shutterSpeed = "1/125"
-            $focalLength = "85mm"
-        } elseif ($fileName -match "IMG") {
-            $device = "iPhone"
-        }
+        Write-Warning "Failed to extract EXIF from $($file.Name): $($_.Exception.Message)"
     }
     
-    if ($device -eq "Unknown") {
+    # Fallback for missing camera info
+    if ($cameraMaker -eq "Unknown" -and $cameraModel -eq "Unknown") {
         $fileName = $file.BaseName.ToUpper()
         if ($fileName -match "DSC") {
-            $device = "Canon EOS R5"
+            $cameraMaker = "NIKON CORPORATION"
+            $cameraModel = "NIKON Z 30"
         } elseif ($fileName -match "IMG") {
-            $device = "iPhone"
+            $cameraMaker = "Apple"
+            $cameraModel = "iPhone"
         }
     }
     
@@ -100,10 +169,12 @@ foreach ($file in $imageFiles) {
         author = $author
         shotDate = $shotDate
         fileSize = "$sizeInMB MB"
-        device = $device
+        cameraMaker = $cameraMaker
+        cameraModel = $cameraModel
         aperture = $aperture
         shutterSpeed = $shutterSpeed
         focalLength = $focalLength
+        iso = $iso
         format = $file.Extension.TrimStart('.').ToUpper()
         width = $width
         height = $height
@@ -122,7 +193,7 @@ $imageArray = $imageArray | Sort-Object shotDate
 Write-Host "Generating CSV data file..."
 
 # Create CSV header
-$csvHeader = "filename,name,author,shotDate,fileSize,device,aperture,shutterSpeed,focalLength,format,width,height"
+$csvHeader = "filename,name,author,shotDate,fileSize,cameraMaker,cameraModel,aperture,shutterSpeed,focalLength,iso,format,width,height"
 $csvContent = @($csvHeader)
 
 # Add data rows
@@ -133,10 +204,12 @@ foreach ($img in $imageArray) {
         $img.author,
         $img.shotDate,
         $img.fileSize,
-        $img.device,
+        $img.cameraMaker,
+        $img.cameraModel,
         $img.aperture,
         $img.shutterSpeed,
         $img.focalLength,
+        $img.iso,
         $img.format,
         $img.width,
         $img.height
@@ -183,7 +256,8 @@ $years = $imageArray | ForEach-Object {
     $date.Year 
 } | Sort-Object -Unique
 
-$devices = $imageArray | ForEach-Object { $_.device } | Sort-Object -Unique
+$cameraMakers = $imageArray | ForEach-Object { $_.cameraMaker } | Sort-Object -Unique
+$cameraModels = $imageArray | ForEach-Object { $_.cameraModel } | Sort-Object -Unique
 $formats = $imageArray | ForEach-Object { $_.format } | Sort-Object -Unique
 $authors = $imageArray | ForEach-Object { $_.author } | Sort-Object -Unique
 
@@ -191,7 +265,8 @@ $metadata = [PSCustomObject]@{
     years = @($years)
     months = @(1..12)
     days = @(1..31)
-    devices = @($devices)
+    cameraMakers = @($cameraMakers)
+    cameraModels = @($cameraModels)
     formats = @($formats)
     authors = @($authors)
     totalImages = $imageArray.Count

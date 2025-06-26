@@ -166,7 +166,8 @@ function setupFilterOptions() {
     const yearFilter = document.getElementById('yearFilter');
     const monthFilter = document.getElementById('monthFilter');
     const dayFilter = document.getElementById('dayFilter');
-    const deviceFilter = document.getElementById('deviceFilter');
+    const cameraMakerFilter = document.getElementById('cameraMakerFilter');
+    const cameraModelFilter = document.getElementById('cameraModelFilter');
     const formatFilter = document.getElementById('formatFilter');
     
     // 使用加载的 filterMetadata
@@ -183,13 +184,23 @@ function setupFilterOptions() {
             });
         }
         
-        // 填充设备
-        if (filterMetadata.devices && Array.isArray(filterMetadata.devices)) {
-            filterMetadata.devices.forEach(device => {
+        // 填充相机制造商
+        if (filterMetadata.cameraMakers && Array.isArray(filterMetadata.cameraMakers)) {
+            filterMetadata.cameraMakers.forEach(maker => {
                 const option = document.createElement('option');
-                option.value = device;
-                option.textContent = device;
-                deviceFilter.appendChild(option);
+                option.value = maker;
+                option.textContent = maker;
+                cameraMakerFilter.appendChild(option);
+            });
+        }
+        
+        // 填充相机型号
+        if (filterMetadata.cameraModels && Array.isArray(filterMetadata.cameraModels)) {
+            filterMetadata.cameraModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                cameraModelFilter.appendChild(option);
             });
         }
         
@@ -211,7 +222,8 @@ function setupFilterOptions() {
             return date.getFullYear();
         }))].sort((a, b) => b - a);
         
-        const devices = [...new Set(allImageData.map(img => img.device))].sort();
+        const cameraMakers = [...new Set(allImageData.map(img => img.cameraMaker))].sort();
+        const cameraModels = [...new Set(allImageData.map(img => img.cameraModel))].sort();
         const formats = [...new Set(allImageData.map(img => img.format))].sort();
         
         // 填充年份选项
@@ -224,12 +236,20 @@ function setupFilterOptions() {
             }
         });
         
-        // 填充设备选项
-        devices.forEach(device => {
+        // 填充相机制造商选项
+        cameraMakers.forEach(maker => {
             const option = document.createElement('option');
-            option.value = device;
-            option.textContent = device;
-            deviceFilter.appendChild(option);
+            option.value = maker;
+            option.textContent = maker;
+            cameraMakerFilter.appendChild(option);
+        });
+        
+        // 填充相机型号选项
+        cameraModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            cameraModelFilter.appendChild(option);
         });
         
         // 填充格式选项
@@ -315,7 +335,8 @@ function applyFilters() {
     const yearFilter = document.getElementById('yearFilter').value;
     const monthFilter = document.getElementById('monthFilter').value;
     const dayFilter = document.getElementById('dayFilter').value;
-    const deviceFilter = document.getElementById('deviceFilter').value;
+    const cameraMakerFilter = document.getElementById('cameraMakerFilter').value;
+    const cameraModelFilter = document.getElementById('cameraModelFilter').value;
     const formatFilter = document.getElementById('formatFilter').value;
     
     filteredImages = allImageData.filter(img => {
@@ -324,10 +345,11 @@ function applyFilters() {
         const matchYear = !yearFilter || imgDate.getFullYear() == yearFilter;
         const matchMonth = !monthFilter || (imgDate.getMonth() + 1) == monthFilter;
         const matchDay = !dayFilter || imgDate.getDate() == dayFilter;
-        const matchDevice = !deviceFilter || img.device === deviceFilter;
+        const matchCameraMaker = !cameraMakerFilter || img.cameraMaker === cameraMakerFilter;
+        const matchCameraModel = !cameraModelFilter || img.cameraModel === cameraModelFilter;
         const matchFormat = !formatFilter || img.format === formatFilter;
         
-        return matchYear && matchMonth && matchDay && matchDevice && matchFormat;
+        return matchYear && matchMonth && matchDay && matchCameraMaker && matchCameraModel && matchFormat;
     });
     
     if (filteredImages.length === 0) {
@@ -356,7 +378,8 @@ function resetFilters() {
     document.getElementById('yearFilter').value = '';
     document.getElementById('monthFilter').value = '';
     document.getElementById('dayFilter').value = '';
-    document.getElementById('deviceFilter').value = '';
+    document.getElementById('cameraMakerFilter').value = '';
+    document.getElementById('cameraModelFilter').value = '';
     document.getElementById('formatFilter').value = '';
     
     // 确保有数据可用
@@ -455,14 +478,15 @@ function updateImageInfo(imageInfo) {
             console.warn(`找不到元素: ${id}`);
         }
     };
-    
-    setElementText('imageName', imageInfo.name || '未知');
+      setElementText('imageName', imageInfo.name || '未知');
     setElementText('imageAuthor', imageInfo.author || '未知');
     setElementText('imageDate', imageInfo.shotDate || '未知');
-    setElementText('imageDevice', imageInfo.device || '未知');
+    setElementText('imageCameraMaker', imageInfo.cameraMaker || '未知');
+    setElementText('imageCameraModel', imageInfo.cameraModel || '未知');
     setElementText('imageAperture', imageInfo.aperture || '未知');
     setElementText('imageShutter', imageInfo.shutterSpeed || '未知');
     setElementText('imageFocal', imageInfo.focalLength || '未知');
+    setElementText('imageISO', imageInfo.iso || '未知');
     setElementText('imageFormat', imageInfo.format || '未知');
     setElementText('imageSize', imageInfo.fileSize || '未知');
 }
@@ -899,8 +923,7 @@ function openImageInNewTab(imageInfo) {
                   <div class="image-details" id="imageDetails">
                     <div class="detail-content">
                         <div class="detail-title">${imageInfo.name}</div>
-                        
-                        <div class="detail-section">
+                          <div class="detail-section">
                             <div class="section-title">基本信息</div>
                             <div class="detail-grid">
                                 <div class="detail-item">
@@ -911,9 +934,19 @@ function openImageInNewTab(imageInfo) {
                                     <span class="detail-label">拍摄时间</span>
                                     <span class="detail-value">${imageInfo.shotDate}</span>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="section-title">相机设备</div>
+                            <div class="detail-grid">
                                 <div class="detail-item">
-                                    <span class="detail-label">设备</span>
-                                    <span class="detail-value">${imageInfo.device || '未知'}</span>
+                                    <span class="detail-label">制造商</span>
+                                    <span class="detail-value">${imageInfo.cameraMaker || '未知'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">型号</span>
+                                    <span class="detail-value">${imageInfo.cameraModel || '未知'}</span>
                                 </div>
                             </div>
                         </div>
@@ -932,6 +965,10 @@ function openImageInNewTab(imageInfo) {
                                 <div class="detail-item">
                                     <span class="detail-label">焦距</span>
                                     <span class="detail-value">${imageInfo.focalLength || '未知'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">ISO</span>
+                                    <span class="detail-value">${imageInfo.iso || '未知'}</span>
                                 </div>
                             </div>
                         </div>
@@ -1074,7 +1111,8 @@ function generateFilterMetadataFromData() {
         return date.getFullYear();
     }))].sort((a, b) => b - a);
     
-    const devices = [...new Set(allImageData.map(img => img.device))].sort();
+    const cameraMakers = [...new Set(allImageData.map(img => img.cameraMaker))].sort();
+    const cameraModels = [...new Set(allImageData.map(img => img.cameraModel))].sort();
     const formats = [...new Set(allImageData.map(img => img.format))].sort();
     const authors = [...new Set(allImageData.map(img => img.author))].sort();
     
@@ -1082,7 +1120,8 @@ function generateFilterMetadataFromData() {
         years: years,
         months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
-        devices: devices,
+        cameraMakers: cameraMakers,
+        cameraModels: cameraModels,
         formats: formats,
         authors: authors,
         totalImages: allImageData.length,

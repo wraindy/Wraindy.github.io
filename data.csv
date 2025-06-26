@@ -1,4 +1,4 @@
-﻿filename,name,author,shotDate,fileSize,device,aperture,shutterSpeed,focalLength,format,width,height
-DSC_5963.jpg,DSC_5963,Unknown,2025-06-23 13:09,43.35 MB,NIKON CORPORATION NIKON Z 30,Unknown,Unknown,Unknown,JPG,3712,5568
-DSC_5987.png,DSC_5987,Unknown,2025-06-23 19:44,9.27 MB,NIKON CORPORATION NIKON Z 30,Unknown,Unknown,Unknown,PNG,4590,2759
-DSC_6056.JPG,DSC_6056,Unknown,2025-06-25 22:26,11.05 MB,NIKON CORPORATION NIKON Z 30,Unknown,Unknown,Unknown,JPG,5538,3692
+﻿filename,name,author,shotDate,fileSize,cameraMaker,cameraModel,aperture,shutterSpeed,focalLength,iso,format,width,height
+DSC_5963.jpg,DSC_5963,Wraindy,2025-06-22 20:04,43.35 MB,NIKON CORPORATION,NIKON Z 30,f/2.8,1/60s,35mm,ISO 16000,JPG,3712,5568
+DSC_5987.png,DSC_5987,Unknown,2025-06-23 19:44,9.27 MB,NIKON CORPORATION,NIKON Z 30,Unknown,Unknown,Unknown,Unknown,PNG,4590,2759
+DSC_6056.JPG,DSC_6056,Wraindy,2025-06-25 18:05,11.05 MB,NIKON CORPORATION,NIKON Z 30,f/8,1/250s,185mm,ISO 250,JPG,5538,3692

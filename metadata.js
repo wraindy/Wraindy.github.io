@@ -1,5 +1,5 @@
 ﻿// Auto-generated filter metadata
-// Generated: 2025-06-26 07:32:17
+// Generated: 2025-06-26 08:25:37
 
 const filterMetadata = {
     "years":  [
@@ -52,18 +52,22 @@ const filterMetadata = {
                  30,
                  31
              ],
-    "devices":  [
-                    "NIKON CORPORATION NIKON Z 30"
-                ],
+    "cameraMakers":  [
+                         "NIKON CORPORATION"
+                     ],
+    "cameraModels":  [
+                         "NIKON Z 30"
+                     ],
     "formats":  [
                     "JPG",
                     "PNG"
                 ],
     "authors":  [
-                    "Unknown"
+                    "Unknown",
+                    "Wraindy"
                 ],
     "totalImages":  3,
-    "lastUpdated":  "2025-06-26 07:32:17"
+    "lastUpdated":  "2025-06-26 08:25:37"
 };
 
 // Export for browser use
